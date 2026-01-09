@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GENERATOR AKSES ONX</title>
+    <style>
+        body { background: #000; color: #00f2ff; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .box { border: 1px solid #00f2ff; padding: 25px; border-radius: 15px; width: 100%; max-width: 350px; text-align: center; }
+        input, select, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: 1px solid #222; box-sizing: border-box; }
+        button { background: #00f2ff; color: #000; font-weight: bold; cursor: pointer; border: none; }
+        textarea { width: 100%; height: 100px; background: #111; color: yellow; border-radius: 8px; font-size: 11px; padding: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 style="font-size: 18px;">CREATE USER ACCESS</h2>
+        <input type="text" id="username" placeholder="Username Pembeli">
+        <input type="text" id="password" placeholder="Password Pembeli">
+        <select id="durasi">
+            <option value="1">1 Jam</option>
+            <option value="24">24 Jam (1 Hari)</option>
+            <option value="168">7 Hari (1 Minggu)</option>
+            <option value="720">30 Hari (1 Bulan)</option>
+        </select>
+        <button onclick="buatLink()">GENERATE AKTIVASI</button>
+        
+        <p style="text-align: left; font-size: 12px;">Link Aktivasi:</p>
+        <textarea id="hasil" readonly></textarea>
+        <p style="font-size: 10px; color: #555;">Kirim link ini ke pembeli. Setelah dibuka, akun otomatis aktif.</p>
+    </div>
+
+    <script>
+        function buatLink() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const d = document.getElementById('durasi').value;
+            
+            if(!u || !p) return alert("Lengkapi data!");
+
+            const exp = new Date().getTime() + (parseInt(d) * 60 * 60 * 1000);
+            
+            // SESUAIKAN URL DI BAWAH INI DENGAN LINK GITHUB PAGES KAMU
+            const targetWeb = "https://onedeev.github.io/Kameradong/";
+            
+            // Menggunakan concatenasi (+) agar simbol &reg tidak terbaca sebagai entitas HTML ®
+            const linkSakti = targetWeb + "?reg_u=" + u + "&" + "reg_p=" + p + "&" + "reg_e=" + exp;
+            
+            document.getElementById('hasil').value = linkSakti;
+        }
+    </script>
+</body>
+</html>
